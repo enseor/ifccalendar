@@ -123,26 +123,6 @@ class MainActivity : ComponentActivity() {
                                 selectedDay = if (selectedMonth == todayMonth) todayDay else null,
                                 onDayClick = { /* Day selection is read-only */ }
                             )
-
-                            Spacer(modifier = Modifier.height(16.dp))
-
-                            // Always show today's selection info if in today's month, 
-                            // or maybe just keep showing it as a reference
-                            Card(
-                                modifier = Modifier
-                                    .padding(16.dp)
-                                    .fillMaxWidth(),
-                                colors = CardDefaults.cardColors(
-                                    containerColor = MaterialTheme.colorScheme.secondaryContainer
-                                )
-                            ) {
-                                val monthName = IfcDate.monthNames[todayMonth - 1]
-                                Text(
-                                    text = "Today is Day $todayDay of $monthName",
-                                    modifier = Modifier.padding(16.dp),
-                                    style = MaterialTheme.typography.bodyLarge
-                                )
-                            }
                         }
                     }
                 }
