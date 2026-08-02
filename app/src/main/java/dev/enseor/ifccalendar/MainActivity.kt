@@ -104,12 +104,14 @@ class MainActivity : ComponentActivity() {
                             YearView(
                                 selectedMonth = todayMonth,
                                 selectedDay = todayDay,
+                                isTodayYearDay = viewModel.isTodayYearDay,
+                                isTodayLeapDay = viewModel.isTodayLeapDay,
+                                isLeapYear = viewModel.isLeapYear,
                                 onMonthClick = { month ->
                                     viewModel.selectMonth(month)
                                 },
                                 onDayClick = { month, _ ->
                                     viewModel.selectMonth(month)
-                                    // Day selection is now read-only
                                 }
                             )
                         } else {

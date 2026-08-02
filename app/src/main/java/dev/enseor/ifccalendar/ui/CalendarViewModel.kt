@@ -30,6 +30,13 @@ class CalendarViewModel : ViewModel() {
     // Fixed selection to today
     val selectedDay: Int = currentIfcDate.value.day
     val selectedMonthForSelection: Int = currentIfcDate.value.month
+    val isTodayYearDay: Boolean = currentIfcDate.value.isYearDay
+    val isTodayLeapDay: Boolean = currentIfcDate.value.isLeapDay
+    val isLeapYear: Boolean = isLeap(currentGregorianDate.value.year)
+
+    private fun isLeap(year: Int): Boolean {
+        return year % 4 == 0 && (year % 100 != 0 || year % 400 == 0)
+    }
 
     private fun getCurrentIfcDate(): IfcDate {
         val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date

@@ -14,6 +14,9 @@ import androidx.compose.foundation.lazy.grid.items
 fun YearView(
     selectedMonth: Int,
     selectedDay: Int?,
+    isTodayYearDay: Boolean,
+    isTodayLeapDay: Boolean,
+    isLeapYear: Boolean,
     onMonthClick: (Int) -> Unit,
     onDayClick: (Int, Int) -> Unit,
     modifier: Modifier = Modifier
@@ -25,16 +28,51 @@ fun YearView(
         verticalArrangement = Arrangement.spacedBy(8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        items(13) { index ->
+        // Months 1 to 6 (Jan to Jun)
+        items(6) { index ->
             val monthIndex = index + 1
             MonthGrid(
                 monthIndex = monthIndex,
-                selectedDay = if (selectedMonth == monthIndex) selectedDay else null,
+                selectedDay = if (selectedMonth == monthIndex && selectedDay != 29) selectedDay else null,
                 onDayClick = { day -> onDayClick(monthIndex, day) },
                 isMini = true,
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable { onMonthClick(monthIndex) }
+            )
+        }
+
+        // Leap Day (inserted between Jun and Sol only if it's a leap year)
+        if (isLeapYear) {
+            item {
+                DayGrid(
+                    title = "Leap Day",
+                    isSelected = isTodayLeapDay,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        }
+
+        // Months 7 to 13 (Sol to Dec)
+        items(7) { index ->
+            val monthIndex = index + 7
+            MonthGrid(
+                monthIndex = monthIndex,
+                selectedDay = if (selectedMonth == monthIndex && selectedDay != 29) selectedDay else null,
+                onDayClick = { day -> onDayClick(monthIndex, day) },
+                isMini = true,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onMonthClick(monthIndex) }
+            )
+        }
+        
+        // Year Day (Positioned at the end)
+        item {
+            DayGrid(
+                title = "Year Day",
+                isSelected = isTodayYearDay,
+                modifier = Modifier.fillMaxWidth()
             )
         }
     }
