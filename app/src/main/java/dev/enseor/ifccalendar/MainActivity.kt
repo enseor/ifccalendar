@@ -47,7 +47,7 @@ class MainActivity : ComponentActivity() {
                         TopAppBar(
                             title = {
                                 Text(
-                                    if (viewMode == CalendarViewMode.YEAR) "IFC Calendar - Year ${currentIfcDate.year}" else "IFC Calendar",
+                                    if (viewMode == CalendarViewMode.YEAR) "International Fixed Calendar - Year ${currentIfcDate.year}" else "International Fixed Calendar",
                                     color = MaterialTheme.colorScheme.onPrimary,
                                     fontWeight = FontWeight.Bold
                                 )
