@@ -9,12 +9,19 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 
+enum class CalendarViewMode {
+    YEAR, MONTH
+}
+
 class CalendarViewModel : ViewModel() {
     private val _currentIfcDate = MutableStateFlow(getCurrentIfcDate())
     val currentIfcDate: StateFlow<IfcDate> = _currentIfcDate.asStateFlow()
 
     private val _selectedMonth = MutableStateFlow(currentIfcDate.value.month)
     val selectedMonth: StateFlow<Int> = _selectedMonth.asStateFlow()
+
+    private val _viewMode = MutableStateFlow(CalendarViewMode.YEAR)
+    val viewMode: StateFlow<CalendarViewMode> = _viewMode.asStateFlow()
 
     private fun getCurrentIfcDate(): IfcDate {
         val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
@@ -24,6 +31,11 @@ class CalendarViewModel : ViewModel() {
     fun selectMonth(month: Int) {
         if (month in 1..13) {
             _selectedMonth.value = month
+            _viewMode.value = CalendarViewMode.MONTH
         }
+    }
+
+    fun setViewMode(mode: CalendarViewMode) {
+        _viewMode.value = mode
     }
 }

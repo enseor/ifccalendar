@@ -2,10 +2,12 @@ package dev.enseor.ifccalendar
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.*
@@ -16,8 +18,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.enseor.ifccalendar.logic.IfcDate
+import dev.enseor.ifccalendar.ui.CalendarViewMode
 import dev.enseor.ifccalendar.ui.CalendarViewModel
 import dev.enseor.ifccalendar.ui.components.MonthGrid
+import dev.enseor.ifccalendar.ui.components.YearView
 import dev.enseor.ifccalendar.ui.theme.IFCTheme
 
 class MainActivity : ComponentActivity() {
@@ -30,17 +34,33 @@ class MainActivity : ComponentActivity() {
                 val viewModel: CalendarViewModel = viewModel()
                 val currentIfcDate by viewModel.currentIfcDate.collectAsState()
                 val selectedMonth by viewModel.selectedMonth.collectAsState()
+                val viewMode by viewModel.viewMode.collectAsState()
                 var selectedDay by remember { mutableStateOf<Int?>(null) }
+
+                BackHandler(enabled = viewMode == CalendarViewMode.MONTH) {
+                    viewModel.setViewMode(CalendarViewMode.YEAR)
+                }
 
                 Scaffold(
                     topBar = {
                         TopAppBar(
                             title = {
                                 Text(
-                                    "IFC Calendar",
+                                    if (viewMode == CalendarViewMode.YEAR) "IFC Calendar - Year ${currentIfcDate.year}" else "IFC Calendar",
                                     color = MaterialTheme.colorScheme.onPrimary,
                                     fontWeight = FontWeight.Bold
                                 )
+                            },
+                            navigationIcon = {
+                                if (viewMode == CalendarViewMode.MONTH) {
+                                    IconButton(onClick = { viewModel.setViewMode(CalendarViewMode.YEAR) }) {
+                                        Icon(
+                                            Icons.AutoMirrored.Filled.ArrowBack,
+                                            contentDescription = "Back to Year",
+                                            tint = MaterialTheme.colorScheme.onPrimary
+                                        )
+                                    }
+                                }
                             },
                             colors = TopAppBarDefaults.topAppBarColors(
                                 containerColor = MaterialTheme.colorScheme.primary
@@ -55,41 +75,54 @@ class MainActivity : ComponentActivity() {
                             .fillMaxSize(),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Text(
-                            text = "Today is: ${currentIfcDate.day} ${currentIfcDate.monthName}, ${currentIfcDate.year}",
-                            modifier = Modifier.padding(16.dp),
-                            style = MaterialTheme.typography.labelLarge,
-                            color = MaterialTheme.colorScheme.secondary
-                        )
+                        if (viewMode == CalendarViewMode.YEAR) {
+                            Text(
+                                text = "Today: ${currentIfcDate.day} ${currentIfcDate.monthName}, ${currentIfcDate.year}",
+                                modifier = Modifier.padding(16.dp),
+                                style = MaterialTheme.typography.labelLarge,
+                                color = MaterialTheme.colorScheme.secondary
+                            )
+                            YearView(
+                                selectedMonth = selectedMonth,
+                                selectedDay = selectedDay,
+                                onMonthClick = { month ->
+                                    viewModel.selectMonth(month)
+                                },
+                                onDayClick = { month, day ->
+                                    viewModel.selectMonth(month)
+                                    selectedDay = day
+                                }
+                            )
+                        } else {
+                            MonthSelector(
+                                currentMonth = selectedMonth,
+                                onMonthChange = viewModel::selectMonth
+                            )
 
-                        MonthSelector(
-                            currentMonth = selectedMonth,
-                            onMonthChange = viewModel::selectMonth
-                        )
+                            MonthGrid(
+                                monthIndex = selectedMonth,
+                                selectedDay = selectedDay,
+                                onDayClick = { selectedDay = it }
+                            )
 
-                        MonthGrid(
-                            monthIndex = selectedMonth,
-                            selectedDay = selectedDay,
-                            onDayClick = { selectedDay = it }
-                        )
+                            Spacer(modifier = Modifier.height(16.dp))
 
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        if (selectedDay != null) {
-                            Card(
-                                modifier = Modifier
-                                    .padding(16.dp)
-                                    .fillMaxWidth(),
-                                colors = CardDefaults.cardColors(
-                                    containerColor = MaterialTheme.colorScheme.secondaryContainer
-                                )
-                            ) {
-                                val monthName = IfcDate.monthNames[selectedMonth - 1]
-                                Text(
-                                    text = "Selected: Day $selectedDay of $monthName",
-                                    modifier = Modifier.padding(16.dp),
-                                    style = MaterialTheme.typography.bodyLarge
-                                )
+                            if (selectedDay != null) {
+                                Card(
+                                    modifier = Modifier
+                                        .padding(16.dp)
+                                        .fillMaxWidth(),
+                                    colors = CardDefaults.cardColors(
+                                        containerColor = MaterialTheme.colorScheme.secondaryContainer
+                                    )
+                                ) {
+                                    val monthName = IfcDate.monthNames[selectedMonth - 1]
+                                    Text(
+                                        text = "Selected: Day $selectedDay of $monthName",
+                                        modifier = Modifier.padding(16.dp),
+                                        style = MaterialTheme.typography.bodyLarge
+                                    )
+                                }
                             }
                         }
                     }

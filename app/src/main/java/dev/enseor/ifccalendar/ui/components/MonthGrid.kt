@@ -14,24 +14,34 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import dev.enseor.ifccalendar.logic.IfcDate
 
 @Composable
 fun MonthGrid(
     monthIndex: Int,
     selectedDay: Int?,
     onDayClick: (Int) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isMini: Boolean = false
 ) {
-    val dayNames = listOf("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
+    val dayNames = if (isMini) {
+        listOf("S", "M", "T", "W", "T", "F", "S")
+    } else {
+        listOf("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
+    }
+    val monthName = IfcDate.monthNames.getOrNull(monthIndex - 1) ?: "Month $monthIndex"
 
-    Column(modifier = modifier.padding(8.dp)) {
-        // Month Title (Simple for now)
+    Column(modifier = modifier.padding(if (isMini) 4.dp else 8.dp)) {
+        // Month Title
         Text(
-            text = "Month $monthIndex",
-            style = MaterialTheme.typography.titleLarge,
+            text = monthName,
+            style = if (isMini) MaterialTheme.typography.titleMedium else MaterialTheme.typography.titleLarge,
             color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.padding(bottom = 16.dp)
+            modifier = Modifier.padding(bottom = if (isMini) 4.dp else 16.dp),
+            textAlign = if (isMini) TextAlign.Center else TextAlign.Start
         )
 
         // Day Names Header
@@ -40,47 +50,94 @@ fun MonthGrid(
                 Text(
                     text = dayName,
                     modifier = Modifier.weight(1f),
-                    style = MaterialTheme.typography.labelMedium.copy(
+                    style = (if (isMini) MaterialTheme.typography.labelSmall else MaterialTheme.typography.labelMedium).copy(
                         color = MaterialTheme.colorScheme.secondary,
                         fontWeight = FontWeight.Bold
                     ),
-                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                    textAlign = TextAlign.Center
                 )
             }
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(if (isMini) 4.dp else 8.dp))
 
         // Days Grid
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(7),
-            modifier = Modifier.height(300.dp)
-        ) {
-            items(28) { index ->
-                val day = index + 1
-                val isSelected = day == selectedDay
+        val gridModifier = if (isMini) {
+            Modifier.fillMaxWidth()
+        } else {
+            Modifier.height(300.dp)
+        }
 
-                Box(
-                    modifier = Modifier
-                        .aspectRatio(1f)
-                        .padding(2.dp)
-                        .border(
-                            width = 1.dp,
-                            color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Gray.copy(alpha = 0.3f)
+        // Use a simple Column/Row structure if isMini to avoid nested LazyVerticalGrids
+        if (isMini) {
+            MonthDaysMini(selectedDay, onDayClick)
+        } else {
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(7),
+                modifier = gridModifier
+            ) {
+                items(28) { index ->
+                    val day = index + 1
+                    val isSelected = day == selectedDay
+
+                    Box(
+                        modifier = Modifier
+                            .aspectRatio(1f)
+                            .padding(2.dp)
+                            .border(
+                                width = 1.dp,
+                                color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Gray.copy(alpha = 0.3f)
+                            )
+                            .background(
+                                if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.1f) else Color.Transparent
+                            )
+                            .clickable { onDayClick(day) },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = day.toString(),
+                            style = MaterialTheme.typography.bodyLarge.copy(
+                                color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+                                fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.Normal
+                            )
                         )
-                        .background(
-                            if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.1f) else Color.Transparent
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun MonthDaysMini(
+    selectedDay: Int?,
+    onDayClick: (Int) -> Unit
+) {
+    Column {
+        for (row in 0 until 4) {
+            Row(modifier = Modifier.fillMaxWidth()) {
+                for (col in 0 until 7) {
+                    val day = row * 7 + col + 1
+                    val isSelected = day == selectedDay
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .aspectRatio(1f)
+                            .padding(1.dp)
+                            .background(
+                                if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.2f) else Color.Transparent
+                            )
+                            .clickable { onDayClick(day) },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = day.toString(),
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontSize = 8.sp,
+                                color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                            )
                         )
-                        .clickable { onDayClick(day) },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = day.toString(),
-                        style = MaterialTheme.typography.bodyLarge.copy(
-                            color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
-                            fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.Normal
-                        )
-                    )
+                    }
                 }
             }
         }
