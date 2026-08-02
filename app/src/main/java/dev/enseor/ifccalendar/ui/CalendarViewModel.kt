@@ -27,6 +27,10 @@ class CalendarViewModel : ViewModel() {
     private val _viewMode = MutableStateFlow(CalendarViewMode.YEAR)
     val viewMode: StateFlow<CalendarViewMode> = _viewMode.asStateFlow()
 
+    // Fixed selection to today
+    val selectedDay: Int = currentIfcDate.value.day
+    val selectedMonthForSelection: Int = currentIfcDate.value.month
+
     private fun getCurrentIfcDate(): IfcDate {
         val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
         return IfcDate.fromGregorian(now)

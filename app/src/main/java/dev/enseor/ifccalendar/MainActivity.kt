@@ -36,7 +36,9 @@ class MainActivity : ComponentActivity() {
                 val currentGregorianDate by viewModel.currentGregorianDate.collectAsState()
                 val selectedMonth by viewModel.selectedMonth.collectAsState()
                 val viewMode by viewModel.viewMode.collectAsState()
-                var selectedDay by remember { mutableStateOf<Int?>(null) }
+                
+                val todayDay = viewModel.selectedDay
+                val todayMonth = viewModel.selectedMonthForSelection
 
                 BackHandler(enabled = viewMode == CalendarViewMode.MONTH) {
                     viewModel.setViewMode(CalendarViewMode.YEAR)
@@ -100,14 +102,14 @@ class MainActivity : ComponentActivity() {
                                 }
                             }
                             YearView(
-                                selectedMonth = selectedMonth,
-                                selectedDay = selectedDay,
+                                selectedMonth = todayMonth,
+                                selectedDay = todayDay,
                                 onMonthClick = { month ->
                                     viewModel.selectMonth(month)
                                 },
-                                onDayClick = { month, day ->
+                                onDayClick = { month, _ ->
                                     viewModel.selectMonth(month)
-                                    selectedDay = day
+                                    // Day selection is now read-only
                                 }
                             )
                         } else {
@@ -118,28 +120,28 @@ class MainActivity : ComponentActivity() {
 
                             MonthGrid(
                                 monthIndex = selectedMonth,
-                                selectedDay = selectedDay,
-                                onDayClick = { selectedDay = it }
+                                selectedDay = if (selectedMonth == todayMonth) todayDay else null,
+                                onDayClick = { /* Day selection is read-only */ }
                             )
 
                             Spacer(modifier = Modifier.height(16.dp))
 
-                            if (selectedDay != null) {
-                                Card(
-                                    modifier = Modifier
-                                        .padding(16.dp)
-                                        .fillMaxWidth(),
-                                    colors = CardDefaults.cardColors(
-                                        containerColor = MaterialTheme.colorScheme.secondaryContainer
-                                    )
-                                ) {
-                                    val monthName = IfcDate.monthNames[selectedMonth - 1]
-                                    Text(
-                                        text = "Selected: Day $selectedDay of $monthName",
-                                        modifier = Modifier.padding(16.dp),
-                                        style = MaterialTheme.typography.bodyLarge
-                                    )
-                                }
+                            // Always show today's selection info if in today's month, 
+                            // or maybe just keep showing it as a reference
+                            Card(
+                                modifier = Modifier
+                                    .padding(16.dp)
+                                    .fillMaxWidth(),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.secondaryContainer
+                                )
+                            ) {
+                                val monthName = IfcDate.monthNames[todayMonth - 1]
+                                Text(
+                                    text = "Today is Day $todayDay of $monthName",
+                                    modifier = Modifier.padding(16.dp),
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
                             }
                         }
                     }
