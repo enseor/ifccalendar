@@ -6,9 +6,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -18,6 +18,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.enseor.ifccalendar.logic.IfcDate
+
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Surface
+import androidx.compose.ui.draw.clip
 
 @Composable
 fun MonthGrid(
@@ -34,76 +38,91 @@ fun MonthGrid(
     }
     val monthName = IfcDate.monthNames.getOrNull(monthIndex - 1) ?: "Month $monthIndex"
 
-    Column(modifier = modifier.padding(if (isMini) 4.dp else 8.dp)) {
-        // Month Title
-        Text(
-            text = monthName,
-            style = if (isMini) MaterialTheme.typography.titleMedium else MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.padding(bottom = if (isMini) 4.dp else 16.dp),
-            textAlign = if (isMini) TextAlign.Center else TextAlign.Start
-        )
+    val content = @Composable {
+        Column(modifier = Modifier.padding(if (isMini) 4.dp else 8.dp)) {
+            // Month Title
+            Text(
+                text = monthName,
+                style = if (isMini) MaterialTheme.typography.titleSmall else MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = if (isMini) 4.dp else 16.dp),
+                textAlign = if (isMini) TextAlign.Center else TextAlign.Start
+            )
 
-        // Day Names Header
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-            dayNames.forEach { dayName ->
-                Text(
-                    text = dayName,
-                    modifier = Modifier.weight(1f),
-                    style = (if (isMini) MaterialTheme.typography.labelSmall else MaterialTheme.typography.labelMedium).copy(
-                        color = MaterialTheme.colorScheme.secondary,
-                        fontWeight = FontWeight.Bold
-                    ),
-                    textAlign = TextAlign.Center
-                )
+            // Day Names Header
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+                dayNames.forEach { dayName ->
+                    Text(
+                        text = dayName,
+                        modifier = Modifier.weight(1f),
+                        style = (if (isMini) MaterialTheme.typography.labelSmall else MaterialTheme.typography.labelMedium).copy(
+                            color = MaterialTheme.colorScheme.secondary,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = if (isMini) 7.sp else MaterialTheme.typography.labelMedium.fontSize
+                        ),
+                        textAlign = TextAlign.Center
+                    )
+                }
             }
-        }
 
-        Spacer(modifier = Modifier.height(if (isMini) 4.dp else 8.dp))
+            Spacer(modifier = Modifier.height(if (isMini) 4.dp else 8.dp))
 
-        // Days Grid
-        val gridModifier = if (isMini) {
-            Modifier.fillMaxWidth()
-        } else {
-            Modifier.height(300.dp)
-        }
+            // Days Grid
+            if (isMini) {
+                MonthDaysMini(selectedDay, onDayClick)
+            } else {
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(7),
+                    modifier = Modifier.height(300.dp)
+                ) {
+                    items(28) { index ->
+                        val day = index + 1
+                        val isSelected = day == selectedDay
 
-        // Use a simple Column/Row structure if isMini to avoid nested LazyVerticalGrids
-        if (isMini) {
-            MonthDaysMini(selectedDay, onDayClick)
-        } else {
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(7),
-                modifier = gridModifier
-            ) {
-                items(28) { index ->
-                    val day = index + 1
-                    val isSelected = day == selectedDay
-
-                    Box(
-                        modifier = Modifier
-                            .aspectRatio(1f)
-                            .padding(2.dp)
-                            .border(
-                                width = 1.dp,
-                                color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Gray.copy(alpha = 0.3f)
+                        Box(
+                            modifier = Modifier
+                                .aspectRatio(1f)
+                                .padding(2.dp)
+                                .border(
+                                    width = 1.dp,
+                                    color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Gray.copy(alpha = 0.3f)
+                                )
+                                .background(
+                                    if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.1f) else Color.Transparent
+                                )
+                                .clickable { onDayClick(day) },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = day.toString(),
+                                style = MaterialTheme.typography.bodyLarge.copy(
+                                    color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+                                    fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.Normal
+                                )
                             )
-                            .background(
-                                if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.1f) else Color.Transparent
-                            )
-                            .clickable { onDayClick(day) },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = day.toString(),
-                            style = MaterialTheme.typography.bodyLarge.copy(
-                                color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
-                                fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.Normal
-                            )
-                        )
+                        }
                     }
                 }
             }
+        }
+    }
+
+    if (isMini) {
+        Surface(
+            modifier = modifier
+                .padding(4.dp)
+                .clip(RoundedCornerShape(8.dp))
+                .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(8.dp)),
+            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+            shape = RoundedCornerShape(8.dp)
+        ) {
+            content()
+        }
+    } else {
+        Box(modifier = modifier) {
+            content()
         }
     }
 }

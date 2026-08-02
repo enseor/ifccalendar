@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.datetime.Clock
+import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 
@@ -14,7 +15,10 @@ enum class CalendarViewMode {
 }
 
 class CalendarViewModel : ViewModel() {
-    private val _currentIfcDate = MutableStateFlow(getCurrentIfcDate())
+    private val _currentGregorianDate = MutableStateFlow(Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date)
+    val currentGregorianDate: StateFlow<LocalDate> = _currentGregorianDate.asStateFlow()
+
+    private val _currentIfcDate = MutableStateFlow(IfcDate.fromGregorian(_currentGregorianDate.value))
     val currentIfcDate: StateFlow<IfcDate> = _currentIfcDate.asStateFlow()
 
     private val _selectedMonth = MutableStateFlow(currentIfcDate.value.month)

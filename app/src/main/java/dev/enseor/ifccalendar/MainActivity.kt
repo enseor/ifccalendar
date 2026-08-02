@@ -33,6 +33,7 @@ class MainActivity : ComponentActivity() {
             IFCTheme {
                 val viewModel: CalendarViewModel = viewModel()
                 val currentIfcDate by viewModel.currentIfcDate.collectAsState()
+                val currentGregorianDate by viewModel.currentGregorianDate.collectAsState()
                 val selectedMonth by viewModel.selectedMonth.collectAsState()
                 val viewMode by viewModel.viewMode.collectAsState()
                 var selectedDay by remember { mutableStateOf<Int?>(null) }
@@ -76,12 +77,28 @@ class MainActivity : ComponentActivity() {
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         if (viewMode == CalendarViewMode.YEAR) {
-                            Text(
-                                text = "Today: ${currentIfcDate.day} ${currentIfcDate.monthName}, ${currentIfcDate.year}",
-                                modifier = Modifier.padding(16.dp),
-                                style = MaterialTheme.typography.labelLarge,
-                                color = MaterialTheme.colorScheme.secondary
-                            )
+                            Card(
+                                modifier = Modifier
+                                    .padding(16.dp)
+                                    .fillMaxWidth(),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
+                                )
+                            ) {
+                                Column(modifier = Modifier.padding(16.dp)) {
+                                    Text(
+                                        text = "Today is: ${currentGregorianDate.dayOfMonth} ${currentGregorianDate.month}, ${currentGregorianDate.year}",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                                    )
+                                    Text(
+                                        text = "IFC: ${currentIfcDate.day} ${currentIfcDate.monthName}, ${currentIfcDate.year}",
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            }
                             YearView(
                                 selectedMonth = selectedMonth,
                                 selectedDay = selectedDay,
