@@ -24,6 +24,8 @@ import androidx.compose.ui.draw.clip
 
 import androidx.compose.runtime.remember
 
+import androidx.compose.foundation.shape.CircleShape
+
 @Composable
 fun MonthGrid(
     monthIndex: Int,
@@ -54,7 +56,6 @@ fun MonthGrid(
     } else {
         MonthFullView(
             modifier = modifier,
-            monthName = monthName,
             dayNames = dayNames,
             selectedDay = selectedDay,
             onDayClick = onDayClick
@@ -73,10 +74,10 @@ private fun MonthMiniContainer(
     Surface(
         modifier = modifier
             .padding(4.dp)
-            .clip(RoundedCornerShape(8.dp))
-            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(8.dp)),
+            .clip(RoundedCornerShape(12.dp))
+            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(12.dp)),
         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
-        shape = RoundedCornerShape(8.dp)
+        shape = RoundedCornerShape(12.dp)
     ) {
         Column(modifier = Modifier.padding(4.dp)) {
             Text(
@@ -90,12 +91,13 @@ private fun MonthMiniContainer(
             )
 
             Row(modifier = Modifier.fillMaxWidth()) {
-                dayNames.forEach { dayName ->
+                dayNames.forEachIndexed { index, dayName ->
+                    val isWeekend = index == 0 || index == 6
                     Text(
                         text = dayName,
                         modifier = Modifier.weight(1f),
                         style = MaterialTheme.typography.labelSmall.copy(
-                            color = MaterialTheme.colorScheme.secondary,
+                            color = if (isWeekend) MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f) else MaterialTheme.colorScheme.secondary,
                             fontWeight = FontWeight.Bold,
                             fontSize = 7.sp
                         ),
@@ -113,27 +115,19 @@ private fun MonthMiniContainer(
 @Composable
 private fun MonthFullView(
     modifier: Modifier,
-    monthName: String,
     dayNames: List<String>,
     selectedDay: Int?,
     onDayClick: (Int) -> Unit
 ) {
     Column(modifier = modifier.padding(8.dp)) {
-        Text(
-            text = monthName,
-            style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.padding(bottom = 16.dp),
-            textAlign = TextAlign.Start
-        )
-
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-            dayNames.forEach { dayName ->
+            dayNames.forEachIndexed { index, dayName ->
+                val isWeekend = index == 0 || index == 6
                 Text(
                     text = dayName,
                     modifier = Modifier.weight(1f),
                     style = MaterialTheme.typography.labelMedium.copy(
-                        color = MaterialTheme.colorScheme.secondary,
+                        color = if (isWeekend) MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f) else MaterialTheme.colorScheme.secondary,
                         fontWeight = FontWeight.Bold
                     ),
                     textAlign = TextAlign.Center
@@ -150,17 +144,23 @@ private fun MonthFullView(
             items(28) { index ->
                 val day = index + 1
                 val isSelected = day == selectedDay
+                val isWeekend = index % 7 == 0 || index % 7 == 6
 
                 Box(
                     modifier = Modifier
                         .aspectRatio(1f)
-                        .padding(2.dp)
+                        .padding(4.dp)
+                        .clip(CircleShape)
                         .border(
                             width = 1.dp,
-                            color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Gray.copy(alpha = 0.3f)
+                            color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Gray.copy(alpha = 0.2f),
+                            shape = CircleShape
                         )
                         .background(
-                            if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.1f) else Color.Transparent
+                            if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.1f) 
+                            else if (isWeekend) Color.Gray.copy(alpha = 0.05f) 
+                            else Color.Transparent,
+                            shape = CircleShape
                         )
                         .clickable { onDayClick(day) },
                     contentAlignment = Alignment.Center
@@ -168,7 +168,11 @@ private fun MonthFullView(
                     Text(
                         text = day.toString(),
                         style = MaterialTheme.typography.bodyLarge.copy(
-                            color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+                            color = when {
+                                isSelected -> MaterialTheme.colorScheme.primary
+                                isWeekend -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
+                                else -> MaterialTheme.colorScheme.onSurface
+                            },
                             fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.Normal
                         )
                     )
@@ -189,13 +193,18 @@ fun MonthDaysMini(
                 for (col in 0 until 7) {
                     val day = row * 7 + col + 1
                     val isSelected = remember(selectedDay) { day == selectedDay }
+                    val isWeekend = col == 0 || col == 6
                     Box(
                         modifier = Modifier
                             .weight(1f)
                             .aspectRatio(1f)
                             .padding(1.dp)
+                            .clip(CircleShape)
                             .background(
-                                if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.2f) else Color.Transparent
+                                if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.2f) 
+                                else if (isWeekend) Color.Gray.copy(alpha = 0.1f)
+                                else Color.Transparent,
+                                shape = CircleShape
                             )
                             .clickable { onDayClick(day) },
                         contentAlignment = Alignment.Center
@@ -204,7 +213,11 @@ fun MonthDaysMini(
                             text = day.toString(),
                             style = MaterialTheme.typography.labelSmall.copy(
                                 fontSize = 8.sp,
-                                color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                                color = when {
+                                    isSelected -> MaterialTheme.colorScheme.primary
+                                    isWeekend -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
+                                    else -> MaterialTheme.colorScheme.onSurface
+                                }
                             )
                         )
                     }

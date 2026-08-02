@@ -47,7 +47,7 @@ class MainActivity : ComponentActivity() {
                         TopAppBar(
                             title = {
                                 Text(
-                                    if (viewMode == CalendarViewMode.YEAR) "International Fixed Calendar - Year ${currentIfcDate.year}" else "International Fixed Calendar",
+                                    "International Fixed Calendar",
                                     color = MaterialTheme.colorScheme.onPrimary,
                                     fontWeight = FontWeight.Bold
                                 )
@@ -87,12 +87,12 @@ class MainActivity : ComponentActivity() {
                             ) {
                                 Column(modifier = Modifier.padding(16.dp)) {
                                     Text(
-                                        text = "Today is: ${currentGregorianDate.dayOfMonth} ${currentGregorianDate.month}, ${currentGregorianDate.year}",
+                                        text = "Gregorian: ${currentGregorianDate.dayOfMonth} ${currentGregorianDate.month}, ${currentGregorianDate.year}",
                                         style = MaterialTheme.typography.titleMedium,
                                         color = MaterialTheme.colorScheme.onPrimaryContainer
                                     )
                                     Text(
-                                        text = "IFC: ${currentIfcDate.day} ${currentIfcDate.monthName}, ${currentIfcDate.year}",
+                                        text = "Fixed: ${currentIfcDate.day} ${currentIfcDate.monthName}, ${currentIfcDate.year}",
                                         style = MaterialTheme.typography.bodyLarge,
                                         color = MaterialTheme.colorScheme.primary,
                                         fontWeight = FontWeight.Bold
